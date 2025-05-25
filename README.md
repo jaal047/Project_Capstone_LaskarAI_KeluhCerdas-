@@ -111,7 +111,6 @@ Instansi publik di Indonesia menerima ribuan keluhan dari masyarakat setiap hari
 | Risiko                                    | Solusi atau Mitigasi                                         |
 | ----------------------------------------- | ------------------------------------------------------------ |
 | Data emosi tidak seimbang                 | Resampling dan augmentasi data                               |
-| Model IndoBERT terlalu besar untuk deploy | Gunakan distilasi model atau quantization                    |
 | Ambiguitas dalam labeling emosi           | Gunakan guideline labeling dan diskusi tim                   |
 | Kompleksitas integrasi                    | Modul sistem dibuat terpisah dan terdokumentasi dengan baik  |
 | Kriteria AHP bersifat subjektif           | Validasi bobot dengan pakar atau metode pairwise consistency |
