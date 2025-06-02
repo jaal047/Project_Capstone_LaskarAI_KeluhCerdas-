@@ -73,7 +73,7 @@ Instansi publik di Indonesia menerima ribuan keluhan dari masyarakat setiap hari
 
 4. **Keyword Extraction**
 
-   * Menggunakan metode **TF-IDF** dan **KeyBERT**.
+   * Menggunakan metode **Text Rank** dan **KeyBERT**.
 
 5. **Prioritas Keluhan (MCDM)**
 
@@ -97,7 +97,7 @@ Instansi publik di Indonesia menerima ribuan keluhan dari masyarakat setiap hari
 | Hugging Face Transformers | Fine-tuning model IndoBERT                 |
 | Scikit-learn              | Preprocessing dan evaluasi                 |
 | Flask                     | Backend REST API                           |
-| KeyBERT / TF-IDF             | Ekstraksi kata kunci                    |
+| KeyBERT / Text Rank       | Ekstraksi kata kunci                    |
 | AHP, VIKOR                | Pengambilan keputusan multikriteria (MCDM) |
 | HTML, CSS, JS             | Frontend sederhana                         |
 | MySQL                     | Database keluhan                           |
