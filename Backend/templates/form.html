@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Form Keluhan{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-8 mx-auto">
+    <div class="card">
+      <div class="card-header"><h3 class="card-title">Form Tambah Keluhan</h3></div>
+      <div class="card-body">
+        <form action="#" method="post">
+          <!-- Tanggal -->
+          <div class="mb-3">
+            <label class="form-label">Tanggal Keluhan</label>
+            <input type="date" class="form-control" name="tanggal_keluhan" value="{{ current_date or '2025-06-05' }}">
+          </div>
+
+          <!-- Instansi -->
+          <div class="mb-3">
+            <label class="form-label">Instansi</label>
+            <select class="form-select" name="instansi">
+              <option selected disabled>Pilih instansi</option>
+              <option value="Disdik">Disdik</option>
+              <option value="Dinkes">Dinkes</option>
+              <option value="PU">PU</option>
+              <option value="Dishub">Dishub</option>
+              <option value="Disdukcapil">Disdukcapil</option>
+            </select>
+          </div>
+
+          <!-- Kecamatan -->
+          <div class="mb-3">
+            <label class="form-label">Kecamatan</label>
+            <select class="form-select" name="kecamatan">
+              <option selected disabled>Pilih kecamatan</option>
+              <option>Medan Amplas</option>
+              <option>Medan Tuntungan</option>
+              <option>Medan Deli</option>
+              <option>Medan Helvetia</option>
+            </select>
+          </div>
+
+          <!-- Kelurahan -->
+          <div class="mb-3">
+            <label class="form-label">Kelurahan</label>
+            <select class="form-select" name="kelurahan">
+              <option selected disabled>Pilih kelurahan</option>
+              <option>Titi Kuning</option>
+              <option>Padang Bulan</option>
+              <option>Helvetia Timur</option>
+              <option>Sunggal</option>
+            </select>
+          </div>
+
+          <!-- Keluhan -->
+          <div class="mb-3">
+            <label class="form-label">Isi Keluhan</label>
+            <textarea class="form-control" name="keluhan" rows="4" placeholder="Masukkan keluhan Anda..."></textarea>
+          </div>
+
+          <!-- Tombol Submit -->
+          <div class="text-end">
+            <button type="submit" class="btn btn-primary">
+              <i class="ti ti-send"></i> Kirim Keluhan
+            </button>
+          </div>
+        </form>
+        {% if message %}
+        <div class="alert alert-success mt-3" role="alert">
+            {{ message }}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

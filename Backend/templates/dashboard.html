@@ -1,0 +1,106 @@
+<!-- templates/dashboard.html -->
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="row row-deck row-cards">
+  <!-- Card: Total Keluhan -->
+  <div class="col-sm-6 col-lg-3">
+    <div class="card">
+      <div class="card-body text-center">
+        <div class="h1 mb-3">1,245</div>
+        <div class="text-muted">Total Keluhan</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card: Topik Terbanyak -->
+  <div class="col-sm-6 col-lg-3">
+    <div class="card">
+      <div class="card-body text-center">
+        <div class="h1 mb-3">Pendidikan</div>
+        <div class="text-muted">Topik Terbanyak</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card: Instansi Terbanyak -->
+  <div class="col-sm-6 col-lg-3">
+    <div class="card">
+      <div class="card-body text-center">
+        <div class="h1 mb-3">Disdik</div>
+        <div class="text-muted">Instansi Terbanyak</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card: Keluhan Hari Ini -->
+  <div class="col-sm-6 col-lg-3">
+    <div class="card">
+      <div class="card-body text-center">
+        <div class="h1 mb-3">32</div>
+        <div class="text-muted">Keluhan Hari Ini</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Chart Area -->
+<div class="row mt-4">
+  <!-- Grafik Keluhan Harian -->
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header"><h3 class="card-title">Tren Keluhan Harian</h3></div>
+      <div class="card-body">
+        <canvas id="keluhanChart" height="120"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pie Chart Distribusi Emosi -->
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-header"><h3 class="card-title">Distribusi Emosi</h3></div>
+      <div class="card-body">
+        <canvas id="emosiPieChart" height="200"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  // Dummy Data for Keluhan Harian
+  const keluhanChart = new Chart(document.getElementById('keluhanChart'), {
+    type: 'line',
+    data: {
+      labels: ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'],
+      datasets: [{
+        label: 'Keluhan',
+        data: [10, 14, 12, 18, 20, 17, 22],
+        fill: true,
+        backgroundColor: 'rgba(53, 162, 235, 0.2)',
+        borderColor: 'rgba(53, 162, 235, 1)',
+        tension: 0.3
+      }]
+    }
+  });
+
+  // Dummy Data for Emosi
+  const emosiPieChart = new Chart(document.getElementById('emosiPieChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Marah', 'Sedih', 'Netral', 'Senang'],
+      datasets: [{
+        data: [40, 25, 20, 15],
+        backgroundColor: ['#f03e3e', '#fab005', '#74c0fc', '#69db7c'],
+        borderWidth: 1
+      }]
+    }
+  });
+</script>
+{% endblock %}
