@@ -2,6 +2,8 @@ from flask import Flask, render_template, request
 from datetime import datetime
 import os
 import pandas as pd
+import pandas as pd
+from wordcloud import WordCloud
 
 app = Flask(__name__)
 
@@ -70,29 +72,39 @@ def dashboard():
 @app.route('/leaderboard')
 def leaderboard():
     base_path = os.path.join('data')
-    dash_df = pd.read_excel(os.path.join(base_path, 'dataset_dash.xlsx'))
-    final_df = pd.read_excel(os.path.join(base_path, 'final_dataset.xlsx'))
+    dash_df   = pd.read_excel(os.path.join(base_path, 'dataset_dash.xlsx'))
+    final_df  = pd.read_excel(os.path.join(base_path, 'final_dataset.xlsx'))
 
-    # Topik terbanyak (ambil 5 besar)
-    top_topik = dash_df['Topik'].value_counts().head(5).reset_index()
+    # ----- Top 5 Topik & Instansi ---------------------------------------
+    top_topik     = dash_df['Topik'].value_counts().head(5).reset_index()
     top_topik.columns = ['Topik', 'Jumlah']
 
-    # Instansi terbanyak (ambil 5 besar)
-    top_instansi = dash_df['Instansi'].value_counts().head(5).reset_index()
+    top_instansi  = dash_df['Instansi'].value_counts().head(5).reset_index()
     top_instansi.columns = ['Instansi', 'Jumlah']
 
-    # Keluhan Prioritas (ambil top 10 dengan skor vikor tertinggi)
-    prioritas_df = final_df.sort_values(by='vikor', ascending=False).head(10).copy()
+    # ----- Word-cloud ----------------------------------------------------
+    text_wc = ' '.join(dash_df['keluhan'].dropna().astype(str))
+    wc_img  = WordCloud(width=800, height=400, background_color="white").generate(text_wc)
 
-    # Gabungkan dengan info keluhan asli (untuk ambil teks, topik, instansi)
-    gabung = pd.merge(prioritas_df, dash_df[['id', 'keluhan', 'Topik', 'Instansi']], left_index=True, right_index=True)
+    wc_path = os.path.join('static', 'wordcloud.png')
+    os.makedirs(os.path.dirname(wc_path), exist_ok=True)
+    wc_img.to_file(wc_path)          # simpan ⇒ static/wordcloud.png
 
-    # Kirim ke template
+    # ----- Keluhan prioritas (10 skor vikor tertinggi) -------------------
+    prioritas_df = final_df.sort_values(by='vikor', ascending=False).head(10)
+    gabung = pd.merge(
+        prioritas_df,
+        dash_df[['id', 'keluhan', 'Topik', 'Instansi']],
+        left_index=True, right_index=True
+    )
+
+    # ----- Render ke template -------------------------------------------
     return render_template(
         'leaderboard.html',
-        top_topik=top_topik.itertuples(index=False),
-        top_instansi=top_instansi.itertuples(index=False),
-        keluhan_prioritas=gabung.itertuples(index=False)
+        wordcloud_image='wordcloud.png',           # <<<<<<  baru
+        top_topik        = top_topik.itertuples(index=False),
+        top_instansi     = top_instansi.itertuples(index=False),
+        keluhan_prioritas= gabung.itertuples(index=False)
     )
 
 @app.route('/form', methods=['GET', 'POST'])

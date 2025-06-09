@@ -6,16 +6,19 @@
 <div class="row mb-4">
   <div class="col">
     <div class="card">
-      <div class="card-header"><h3 class="card-title">Wordcloud Keluhan</h3></div>
+      <div class="card-header"><h3 class="card-title">Word-cloud Keluhan</h3></div>
       <div class="card-body text-center">
-        <img src="{{ url_for('static', filename='img/wordcloud_dummy.png') }}" alt="Wordcloud Keluhan" class="img-fluid" style="max-height: 300px;">
+        <!--  gunakan variabel 'wordcloud_image' yang dikirim Flask  -->
+        <img src="{{ url_for('static', filename=wordcloud_image) }}"
+             alt="Word-cloud Keluhan"
+             class="img-fluid" style="max-height:300px;">
       </div>
     </div>
   </div>
 </div>
 
 <div class="row row-deck">
-  <!-- Topik Keluhan -->
+  <!-- ========= Topik ========= -->
   <div class="col-md-6">
     <div class="card">
       <div class="card-header"><h3 class="card-title">Topik Keluhan Terbanyak</h3></div>
@@ -36,7 +39,7 @@
     </div>
   </div>
 
-  <!-- Instansi Terbanyak -->
+  <!-- ========= Instansi ========= -->
   <div class="col-md-6">
     <div class="card">
       <div class="card-header"><h3 class="card-title">Instansi Terbanyak Menerima Keluhan</h3></div>
@@ -58,21 +61,16 @@
   </div>
 </div>
 
-<!-- Tabel Keluhan Terprioritas -->
+<!-- ========= Keluhan Prioritas ========= -->
 <div class="card mt-4">
   <div class="card-header"><h3 class="card-title">Daftar Keluhan Prioritas</h3></div>
   <div class="card-body p-0">
     <div class="table-responsive">
-      <table class="table table-hover table-striped">
+      <table class="table table-hover table-striped mb-0">
         <thead>
           <tr>
-            <th>ID</th>
-            <th>Keluhan</th>
-            <th>Topik</th>
-            <th>Instansi</th>
-            <th>Emosi</th>
-            <th>Skor Prioritas</th>
-            <th>Status</th>
+            <th>ID</th><th>Keluhan</th><th>Topik</th><th>Instansi</th>
+            <th>Emosi</th><th>Skor Prioritas</th><th>Status</th>
           </tr>
         </thead>
         <tbody>
@@ -88,8 +86,7 @@
                 {% if row.vikor >= 0.9 %}bg-danger
                 {% elif row.vikor >= 0.7 %}bg-warning
                 {% else %}bg-secondary
-                {% endif %}
-              ">
+                {% endif %}">
                 {{ "%.2f"|format(row.vikor) }}
               </span>
             </td>
@@ -98,8 +95,7 @@
                 {% if row.status == "belum ditanggapi" %}bg-yellow
                 {% elif row.status == "selesai" %}bg-success
                 {% else %}bg-secondary
-                {% endif %}
-              ">
+                {% endif %}">
                 {{ row.status }}
               </span>
             </td>
@@ -110,5 +106,4 @@
     </div>
   </div>
 </div>
-
 {% endblock %}
