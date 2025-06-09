@@ -1,56 +1,101 @@
 from flask import Flask, render_template, request
-from datetime import date
+from datetime import datetime
+import os
+import pandas as pd
 
 app = Flask(__name__)
-
-# Dummy Data contoh untuk dashboard
-dummy_dashboard = {
-    "total_reports": 150,
-    "in_process": 60,
-    "high_priority": 25,
-    "new_reports": 10,
-    "resolved_reports": 55,
-    "pending_reports": 35
-}
-
-# Dummy data untuk leaderboard
-dummy_leaderboard = {
-    "top_topics": [
-        {"topic": "Sampah", "count": 40},
-        {"topic": "Lalu Lintas", "count": 30},
-        {"topic": "Penerangan Jalan", "count": 20}
-    ],
-    "top_instansi": [
-        {"instansi": "Dinas Kebersihan", "count": 50},
-        {"instansi": "Dinas Perhubungan", "count": 35},
-        {"instansi": "Dinas Penerangan", "count": 25}
-    ],
-    "complaints": [
-        {"id": 1, "keluhan": "Jalan berlubang di depan rumah", "instansi": "Dinas PU", "status": "Pending"},
-        {"id": 2, "keluhan": "Lampu jalan mati di RT 05", "instansi": "Dinas Penerangan", "status": "Diproses"},
-        {"id": 3, "keluhan": "Sampah menumpuk di pasar", "instansi": "Dinas Kebersihan", "status": "Selesai"}
-    ],
-    "wordcloud_words": [
-        {"text": "Sampah", "weight": 40},
-        {"text": "Jalan", "weight": 35},
-        {"text": "Lampu", "weight": 25},
-        {"text": "Macet", "weight": 15},
-        {"text": "Air", "weight": 10}
-    ]
-}
 
 @app.route('/')
 @app.route('/dashboard')
 def dashboard():
-    return render_template('dashboard.html', data=dummy_dashboard)
+    base_path = os.path.join('data')
+    dash_df = pd.read_excel(os.path.join(base_path, 'dataset_dash.xlsx'))
+    emosi_df = pd.read_excel(os.path.join(base_path, 'final_dataset.xlsx'))
+
+    # Info utama
+    total_keluhan = dash_df.shape[0]
+    topik_terbanyak = dash_df['Topik'].value_counts().idxmax()
+    instansi_terbanyak = dash_df['Instansi'].value_counts().idxmax()
+
+    # Proses tanggal
+    dash_df['tanggal_keluhan'] = pd.to_datetime(dash_df['tanggal_keluhan']).dt.normalize()
+    today = pd.to_datetime(datetime.today().date())
+    keluhan_hari_ini = dash_df[dash_df['tanggal_keluhan'] == today].shape[0]
+
+    # Data keluhan harian (last 7 days)
+    start_date = today - pd.Timedelta(days=6)
+    last_7_days_df = dash_df[(dash_df['tanggal_keluhan'] >= start_date) & (dash_df['tanggal_keluhan'] <= today)].copy()
+
+    last_7_days_df['nama_hari'] = last_7_days_df['tanggal_keluhan'].dt.day_name()
+    hari_en_to_id = {
+        'Monday': 'Senin',
+        'Tuesday': 'Selasa',
+        'Wednesday': 'Rabu',
+        'Thursday': 'Kamis',
+        'Friday': 'Jumat',
+        'Saturday': 'Sabtu',
+        'Sunday': 'Minggu'
+    }
+    last_7_days_df['nama_hari'] = last_7_days_df['nama_hari'].map(hari_en_to_id)
+    hari_urut = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu']
+    keluhan_per_hari = last_7_days_df.groupby('nama_hari').size().reindex(hari_urut, fill_value=0)
+    keluhan_harian_labels = keluhan_per_hari.index.tolist()
+    keluhan_harian_values = keluhan_per_hari.values.tolist()
+
+    # Data emosi
+    emosi_dist = emosi_df['emosi'].value_counts()
+    emosi_values = emosi_dist.values.tolist()
+
+    # 📊 Data Keluhan Bulanan (All Time)
+    dash_df['bulan_tahun'] = dash_df['tanggal_keluhan'].dt.strftime('%b %Y')
+    keluhan_bulanan = dash_df['bulan_tahun'].value_counts().sort_index()
+    keluhan_bulanan_labels = keluhan_bulanan.index.tolist()
+    keluhan_bulanan_values = keluhan_bulanan.values.tolist()
+
+    return render_template(
+        'dashboard.html',
+        total_keluhan=total_keluhan,
+        topik_terbanyak=topik_terbanyak,
+        instansi_terbanyak=instansi_terbanyak,
+        keluhan_hari_ini=keluhan_hari_ini,
+        keluhan_harian_labels=keluhan_harian_labels,
+        keluhan_harian_values=keluhan_harian_values,
+        emosi_labels=emosi_dist.index.tolist(),
+        emosi_values=emosi_values,
+        keluhan_bulanan_labels=keluhan_bulanan_labels,
+        keluhan_bulanan_values=keluhan_bulanan_values
+    )
+
 
 @app.route('/leaderboard')
 def leaderboard():
-    return render_template('leaderboard.html', data=dummy_leaderboard)
+    base_path = os.path.join('data')
+    keluhan_df = pd.read_excel(os.path.join(base_path, 'final_dataset.xlsx'))
+
+    top_emosi = keluhan_df['emosi'].value_counts().head(5).reset_index()
+    top_emosi.columns = ['topic', 'count']
+
+    top_instansi = keluhan_df['keyword_keybert'].value_counts().head(5).reset_index()
+    top_instansi.columns = ['instansi', 'count']
+
+    complaints = keluhan_df[['keluhan_baku', 'keyword_keybert', 'status']].head(10).copy()
+    complaints['id'] = complaints.index + 1
+    complaints.rename(columns={'keluhan_baku': 'keluhan', 'keyword_keybert': 'instansi'}, inplace=True)
+
+    wordcloud_words = [
+        {"text": k, "weight": int(v)} for k, v in keluhan_df['keyword_keybert'].value_counts().head(30).items()
+    ]
+
+    data = {
+        "top_topics": top_emosi.to_dict(orient='records'),
+        "top_instansi": top_instansi.to_dict(orient='records'),
+        "complaints": complaints.to_dict(orient='records'),
+        "wordcloud_words": wordcloud_words
+    }
+    return render_template('leaderboard.html', data=data)
 
 @app.route('/form', methods=['GET', 'POST'])
 def form():
-    return render_template('form.html')
     if request.method == 'POST':
         # Untuk sekarang dummy dulu, nanti bisa disambung ke backend model
         keluhan = request.form.get('keluhan')
@@ -58,4 +103,8 @@ def form():
         tanggal_keluhan = request.form.get('tanggal_keluhan')
         kecamatan = request.form.get('kecamatan')
         kelurahan = request.form.get('kelurahan')
-        # Bisa proses disini
+        # Proses data di sini sesuai kebutuhan
+        # ...
+        return "Form submitted!"  # Sementara response sederhana
+
+    return render_template('form.html')
