@@ -70,29 +70,30 @@ def dashboard():
 @app.route('/leaderboard')
 def leaderboard():
     base_path = os.path.join('data')
-    keluhan_df = pd.read_excel(os.path.join(base_path, 'final_dataset.xlsx'))
+    dash_df = pd.read_excel(os.path.join(base_path, 'dataset_dash.xlsx'))
+    final_df = pd.read_excel(os.path.join(base_path, 'final_dataset.xlsx'))
 
-    top_emosi = keluhan_df['emosi'].value_counts().head(5).reset_index()
-    top_emosi.columns = ['topic', 'count']
+    # Topik terbanyak (ambil 5 besar)
+    top_topik = dash_df['Topik'].value_counts().head(5).reset_index()
+    top_topik.columns = ['Topik', 'Jumlah']
 
-    top_instansi = keluhan_df['keyword_keybert'].value_counts().head(5).reset_index()
-    top_instansi.columns = ['instansi', 'count']
+    # Instansi terbanyak (ambil 5 besar)
+    top_instansi = dash_df['Instansi'].value_counts().head(5).reset_index()
+    top_instansi.columns = ['Instansi', 'Jumlah']
 
-    complaints = keluhan_df[['keluhan_baku', 'keyword_keybert', 'status']].head(10).copy()
-    complaints['id'] = complaints.index + 1
-    complaints.rename(columns={'keluhan_baku': 'keluhan', 'keyword_keybert': 'instansi'}, inplace=True)
+    # Keluhan Prioritas (ambil top 10 dengan skor vikor tertinggi)
+    prioritas_df = final_df.sort_values(by='vikor', ascending=False).head(10).copy()
 
-    wordcloud_words = [
-        {"text": k, "weight": int(v)} for k, v in keluhan_df['keyword_keybert'].value_counts().head(30).items()
-    ]
+    # Gabungkan dengan info keluhan asli (untuk ambil teks, topik, instansi)
+    gabung = pd.merge(prioritas_df, dash_df[['id', 'keluhan', 'Topik', 'Instansi']], left_index=True, right_index=True)
 
-    data = {
-        "top_topics": top_emosi.to_dict(orient='records'),
-        "top_instansi": top_instansi.to_dict(orient='records'),
-        "complaints": complaints.to_dict(orient='records'),
-        "wordcloud_words": wordcloud_words
-    }
-    return render_template('leaderboard.html', data=data)
+    # Kirim ke template
+    return render_template(
+        'leaderboard.html',
+        top_topik=top_topik.itertuples(index=False),
+        top_instansi=top_instansi.itertuples(index=False),
+        keluhan_prioritas=gabung.itertuples(index=False)
+    )
 
 @app.route('/form', methods=['GET', 'POST'])
 def form():

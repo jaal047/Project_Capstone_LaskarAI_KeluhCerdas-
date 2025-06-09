@@ -23,11 +23,13 @@
         <table class="table table-striped table-hover">
           <thead><tr><th>#</th><th>Topik</th><th>Jumlah</th></tr></thead>
           <tbody>
-            <tr><td>1</td><td>Pendidikan</td><td>350</td></tr>
-            <tr><td>2</td><td>Kesehatan</td><td>280</td></tr>
-            <tr><td>3</td><td>Infrastruktur</td><td>210</td></tr>
-            <tr><td>4</td><td>Administrasi</td><td>190</td></tr>
-            <tr><td>5</td><td>Keamanan</td><td>160</td></tr>
+            {% for row in top_topik %}
+            <tr>
+              <td>{{ loop.index }}</td>
+              <td>{{ row.Topik }}</td>
+              <td>{{ row.Jumlah }}</td>
+            </tr>
+            {% endfor %}
           </tbody>
         </table>
       </div>
@@ -42,11 +44,13 @@
         <table class="table table-striped table-hover">
           <thead><tr><th>#</th><th>Instansi</th><th>Jumlah</th></tr></thead>
           <tbody>
-            <tr><td>1</td><td>Disdik</td><td>220</td></tr>
-            <tr><td>2</td><td>Dinkes</td><td>185</td></tr>
-            <tr><td>3</td><td>Dishub</td><td>160</td></tr>
-            <tr><td>4</td><td>Disdukcapil</td><td>130</td></tr>
-            <tr><td>5</td><td>Satpol PP</td><td>95</td></tr>
+            {% for row in top_instansi %}
+            <tr>
+              <td>{{ loop.index }}</td>
+              <td>{{ row.Instansi }}</td>
+              <td>{{ row.Jumlah }}</td>
+            </tr>
+            {% endfor %}
           </tbody>
         </table>
       </div>
@@ -72,37 +76,39 @@
           </tr>
         </thead>
         <tbody>
+          {% for row in keluhan_prioritas %}
           <tr>
-            <td>KL0012</td>
-            <td>Sekolah rusak parah tidak diperbaiki bertahun-tahun</td>
-            <td>Pendidikan</td>
-            <td>Disdik</td>
-            <td>Marah</td>
-            <td><span class="badge bg-danger">0.92</span></td>
-            <td><span class="badge bg-yellow">Belum Ditanggapi</span></td>
+            <td>{{ row.id }}</td>
+            <td>{{ row.keluhan }}</td>
+            <td>{{ row.Topik }}</td>
+            <td>{{ row.Instansi }}</td>
+            <td>{{ row.emosi }}</td>
+            <td>
+              <span class="badge 
+                {% if row.vikor >= 0.9 %}bg-danger
+                {% elif row.vikor >= 0.7 %}bg-warning
+                {% else %}bg-secondary
+                {% endif %}
+              ">
+                {{ "%.2f"|format(row.vikor) }}
+              </span>
+            </td>
+            <td>
+              <span class="badge 
+                {% if row.status == "belum ditanggapi" %}bg-yellow
+                {% elif row.status == "selesai" %}bg-success
+                {% else %}bg-secondary
+                {% endif %}
+              ">
+                {{ row.status }}
+              </span>
+            </td>
           </tr>
-          <tr>
-            <td>KL0017</td>
-            <td>Pelayanan puskesmas lambat dan tidak ramah</td>
-            <td>Kesehatan</td>
-            <td>Dinkes</td>
-            <td>Kesal</td>
-            <td><span class="badge bg-danger">0.88</span></td>
-            <td><span class="badge bg-yellow">Belum Ditanggapi</span></td>
-          </tr>
-          <tr>
-            <td>KL0025</td>
-            <td>Jalan berlubang menyebabkan kecelakaan</td>
-            <td>Infrastruktur</td>
-            <td>PU</td>
-            <td>Marah</td>
-            <td><span class="badge bg-danger">0.85</span></td>
-            <td><span class="badge bg-yellow">Belum Ditanggapi</span></td>
-          </tr>
-          <!-- Tambahkan baris dummy lainnya -->
+          {% endfor %}
         </tbody>
       </table>
     </div>
   </div>
 </div>
+
 {% endblock %}
