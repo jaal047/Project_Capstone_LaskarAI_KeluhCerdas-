@@ -1,5 +1,6 @@
+
 from flask import Flask, render_template, request
-from datetime import datetime
+from datetime import date, datetime
 import os
 import pandas as pd
 import pandas as pd
@@ -48,11 +49,26 @@ def dashboard():
     emosi_dist = emosi_df['emosi'].value_counts()
     emosi_values = emosi_dist.values.tolist()
 
-    # 📊 Data Keluhan Bulanan (All Time)
-    dash_df['bulan_tahun'] = dash_df['tanggal_keluhan'].dt.strftime('%b %Y')
-    keluhan_bulanan = dash_df['bulan_tahun'].value_counts().sort_index()
-    keluhan_bulanan_labels = keluhan_bulanan.index.tolist()
-    keluhan_bulanan_values = keluhan_bulanan.values.tolist()
+    # Data keluhan bulanan dengan sorting berdasarkan tanggal
+    # Buat kolom untuk menampung data bulanan dan kelompokkan berdasarkan bulan dan tahun
+    dash_df['year'] = dash_df['tanggal_keluhan'].dt.year
+    dash_df['month'] = dash_df['tanggal_keluhan'].dt.month
+    
+    # Kelompokkan berdasarkan bulan dan tahun
+    keluhan_bulanan = dash_df.groupby(['year', 'month']).size().reset_index()
+    keluhan_bulanan.columns = ['year', 'month', 'count']
+    
+    # Urutkan berdasarkan tahun dan bulan
+    keluhan_bulanan = keluhan_bulanan.sort_values(['year', 'month'])
+    
+    # Format label bulan-tahun untuk tampilan
+    import calendar
+    keluhan_bulanan['bulan_nama'] = keluhan_bulanan.apply(
+        lambda row: f"{calendar.month_abbr[row['month']]} {row['year']}",
+        axis=1
+    )
+    keluhan_bulanan_labels = keluhan_bulanan['bulan_nama'].tolist()
+    keluhan_bulanan_values = keluhan_bulanan['count'].tolist()
 
     return render_template(
         'dashboard.html',
