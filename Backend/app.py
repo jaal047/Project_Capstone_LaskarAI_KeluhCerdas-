@@ -218,7 +218,7 @@ def form():
 
         # Simpan ke final_dataset.xlsx
         # Cek apakah file sudah ada, jika tidak buat baru
-        dataset_path = os.path.join('data', 'final_dataset.xlsx')
+        dataset_path = os.path.join('data', 'vikor_fix.xlsx')
         if not os.path.exists(dataset_path):
             df = pd.DataFrame([new_data])
         else:
