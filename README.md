@@ -1,116 +1,100 @@
-# 💬 KeluhCerdas: Klasifikasi Emosi dan Prioritas Keluhan Publik Berbasis IndoBERT
+# 💬 KeluhCerdas - Sistem Prioritisasi Keluhan Publik Berbasis AI
 
-**KeluhCerdas** adalah sistem kecerdasan buatan berbasis **Natural Language Processing (NLP)** dengan model klasifikasi emosi berbasis **IndoBERT**. Aplikasi ini dirancang untuk memahami isi emosional dari keluhan masyarakat, mengekstraksi informasi penting, dan menentukan tingkat urgensinya. Dengan KeluhCerdas, instansi pemerintah dapat merespons aduan publik secara **lebih cepat, tepat, dan empatik**.
-
----
-
-## 📌 Daftar Isi
-
-* [Latar Belakang](#latar-belakang)
-* [Rumusan Masalah](#rumusan-masalah)
-* [Tujuan](#tujuan)
-* [Lingkup Proyek](#lingkup-proyek)
-* [Metodologi](#metodologi)
-* [Teknologi yang Digunakan](#teknologi-yang-digunakan)
-* [Potensi Risiko atau Masalah](#potensi-risiko-atau-masalah)
+**KeluhCerdas** adalah sebuah sistem berbasis kecerdasan buatan (AI) yang dirancang untuk membantu instansi pemerintah dalam memprioritaskan keluhan masyarakat secara efisien dan objektif. Sistem ini menganalisis isi keluhan menggunakan pemrosesan bahasa alami untuk mendeteksi topik dan emosi, lalu menghitung skor prioritas menggunakan metode Multi-Criteria Decision Making (VIKOR). Hasilnya disajikan melalui dashboard visual yang interaktif.
 
 ---
 
-## 🧠 Latar Belakang
+## 🚀 Fitur Utama
 
-Instansi publik di Indonesia menerima ribuan keluhan dari masyarakat setiap harinya. Namun, tidak semua keluhan memiliki tingkat urgensi yang sama. Beberapa mengandung emosi kuat seperti kemarahan atau kesedihan, sementara yang lain bersifat netral. Dengan teknologi NLP dan model **IndoBERT** yang sudah dioptimasi untuk Bahasa Indonesia, KeluhCerdas mampu mengidentifikasi emosi serta menilai prioritas keluhan secara otomatis.
-
----
-
-## ❓ Rumusan Masalah
-
-* Bagaimana mengklasifikasikan emosi dalam keluhan masyarakat berbahasa Indonesia secara akurat?
-* Bagaimana mengekstraksi kata kunci penting dari keluhan?
-* Bagaimana menentukan prioritas penanganan keluhan berdasarkan konten dan emosinya?
+- 📌 **Analisis Topik Otomatis** dengan NLP dan Keyword Extraction
+- 😡 **Deteksi Emosi Keluhan** berbasis model klasifikasi TensorFlow
+- 🧮 **Skoring Prioritas** menggunakan metode VIKOR
+- 📊 **Dashboard Interaktif** berbasis Flask + Bootstrap
+- 🔍 **Filter & Visualisasi** keluhan berdasarkan emosi, topik, instansi, status
 
 ---
 
-## 🌟 Tujuan
+## 🧠 Teknologi yang Digunakan
 
-* Membangun sistem klasifikasi emosi menggunakan **IndoBERT**.
-* Mengembangkan fitur ekstraksi kata kunci dari teks keluhan.
-* Menentukan prioritas penanganan keluhan menggunakan metode **MCDM (AHP + VIKOR)**.
-
----
-
-## 🧱 Lingkup Proyek
-
-✅ Termasuk:
-
-* Pengumpulan dan pelabelan data keluhan publik
-* Pelatihan model IndoBERT untuk klasifikasi emosi
-* Ekstraksi kata kunci menggunakan KeyBERT atau TextRank
-* Perankingan urgensi keluhan dengan AHP + VIKOR
-* Pembuatan antarmuka pengguna dan backend API
-
-🚫 Tidak termasuk:
-
-* Speech-to-text untuk keluhan suara
-* Sentiment analysis lanjutan
-* Integrasi real-time dengan platform pengaduan publik
+- Python 3.9
+- TensorFlow / Keras
+- Pandas, NumPy, Scikit-learn
+- Flask (Backend)
+- Bootstrap 5 (Frontend)
+- Matplotlib, Seaborn, Plotly
+- VIKOR (Multi-Criteria Decision Making)
+- Excel / CSV Input (Sementara)
 
 ---
 
-## 🧪 Metodologi
+## 📂 Struktur Proyek
 
-1. **Data Collection & Labeling**
-
-   * Emosi yang dilabeli: *Fear*,  *Sad*, *Angry*.
-
-2. **Preprocessing**
-
-   * Case folding, tokenisasi, stopword removal, dan normalisasi teks.
-
-3. **Modeling**
-
-   * Fine-tuning **IndoBERT** dan **IndoBERTweet**.
-   * Evaluasi: akurasi, precision, recall, F1-score.
-
-4. **Keyword Extraction**
-
-   * Menggunakan metode **Text Rank** dan **KeyBERT**.
-
-5. **Prioritas Keluhan (MCDM)**
-
-   * **AHP** untuk menentukan bobot kriteria (emosi, keyword, panjang teks).
-   * **VIKOR** untuk menyusun peringkat urgensi berdasarkan bobot tersebut.
-
-6. **Deployment**
-
-   * API klasifikasi menggunakan **Flask**.
-   * Frontend web antarmuka pengguna.
-   * Database penyimpanan dengan **MySQL**.
+```
+Project_Capstone_LaskarAI_KeluhCerdas/
+│
+├── Backend/                  # Backend Flask + Dashboard UI
+│   ├── app.py                # Main Flask app
+│   ├── static/               # CSS, JS, Icons
+│   ├── templates/            # HTML Template Files
+│   └── data/                 # Dataset (Excel): dataset_dash.xlsx, final_dataset.xlsx
+│
+├── Model/                    # Notebook & Model Files
+│   ├── emosi_model.h5        # Model Deteksi Emosi
+│   ├── topik_model.pkl       # Model Klasifikasi Topik
+│   ├── preprocessing.py      # Preprocessing & utils
+│   └── inference_demo.ipynb  # Notebook testing model
+│
+├── README.md
+└── requirements.txt
+```
 
 ---
 
-## 🛠 Teknologi yang Digunakan
+## 📥 Instalasi & Menjalankan Proyek
 
-| Tools/Library             | Fungsi                                     |
-| ------------------------- | ------------------------------------------ |
-| Python                    | Bahasa pemrograman utama                   |
-| IndoBERT, IndoBERTweet    | Model pre-trained untuk Bahasa Indonesia   |
-| Hugging Face Transformers | Fine-tuning model IndoBERT                 |
-| Scikit-learn              | Preprocessing dan evaluasi                 |
-| Flask                     | Backend REST API                           |
-| KeyBERT / Text Rank       | Ekstraksi kata kunci                    |
-| AHP, VIKOR                | Pengambilan keputusan multikriteria (MCDM) |
-| HTML, CSS, JS             | Frontend sederhana                         |
-| MySQL                     | Database keluhan                           |
+1. **Clone repositori ini**
+```bash
+git clone https://github.com/username/KeluhCerdas.git
+cd KeluhCerdas/Backend
+```
 
+2. **Aktifkan Python 3.9 dan install dependensi**
+```bash
+py -3.9 -m venv venv
+venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+3. **Jalankan Flask App**
+```bash
+$env:FLASK_APP = "app.py"
+$env:FLASK_ENV = "development"
+flask run
+```
 
 ---
 
+## 📊 Contoh Tampilan Dashboard
 
-## ⚠️ Potensi Risiko atau Masalah
+![Contoh Dashboard](https://via.placeholder.com/800x400.png?text=Screenshot+Dashboard+KeluhCerdas)
 
-| Risiko                                    | Solusi atau Mitigasi                                         |
-| ----------------------------------------- | ------------------------------------------------------------ |
-| Data emosi tidak seimbang                 | Resampling dan augmentasi data                               |
-| Ambiguitas dalam labeling emosi           | Gunakan guideline labeling dan diskusi tim                   |
-| Kompleksitas integrasi                    | Modul sistem dibuat terpisah dan terdokumentasi dengan baik  |
-| Kriteria AHP bersifat subjektif           | Validasi bobot dengan pakar atau metode pairwise consistency |
+---
+
+## 🎯 Tujuan Proyek
+
+Proyek ini dikembangkan sebagai bagian dari Capstone Project pada program pelatihan Machine Learning untuk membantu:
+
+- Pemerintah dalam **mengelola keluhan publik** secara adil dan efisien.
+- Masyarakat dalam mendapatkan **respon yang lebih cepat** terhadap keluhan kritis.
+- Mengintegrasikan AI dalam praktik pelayanan publik yang nyata.
+
+---
+
+## 🧑‍💻 Tim Pengembang
+
+- [Rijal Akhdan](https://github.com/jaal047) – Project Lead
+- Mohammad Sihabudin Al Qurtubi 
+- Muhammad Naufal Ilman
+- M Mahfudl Awaludin
+
+---
