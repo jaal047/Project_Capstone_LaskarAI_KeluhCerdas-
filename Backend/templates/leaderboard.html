@@ -3,63 +3,7 @@
 {% block title %}Leaderboard{% endblock %}
 
 {% block content %}
-<div class="row mb-4">
-  <div class="col">
-    <div class="card">
-      <div class="card-header"><h3 class="card-title">Word-cloud Keluhan</h3></div>
-      <div class="card-body text-center">
-        <!--  gunakan variabel 'wordcloud_image' yang dikirim Flask  -->
-        <img src="{{ url_for('static', filename=wordcloud_image) }}"
-             alt="Word-cloud Keluhan"
-             class="img-fluid" style="max-height:300px;">
-      </div>
-    </div>
-  </div>
-</div>
 
-<div class="row row-deck">
-  <!-- ========= Topik ========= -->
-  <div class="col-md-6">
-    <div class="card">
-      <div class="card-header"><h3 class="card-title">Topik Keluhan Terbanyak</h3></div>
-      <div class="card-body p-0">
-        <table class="table table-striped table-hover">
-          <thead><tr><th>#</th><th>Topik</th><th>Jumlah</th></tr></thead>
-          <tbody>
-            {% for row in top_topik %}
-            <tr>
-              <td>{{ loop.index }}</td>
-              <td>{{ row.Topik }}</td>
-              <td>{{ row.Jumlah }}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <!-- ========= Instansi ========= -->
-  <div class="col-md-6">
-    <div class="card">
-      <div class="card-header"><h3 class="card-title">Instansi Terbanyak Menerima Keluhan</h3></div>
-      <div class="card-body p-0">
-        <table class="table table-striped table-hover">
-          <thead><tr><th>#</th><th>Instansi</th><th>Jumlah</th></tr></thead>
-          <tbody>
-            {% for row in top_instansi %}
-            <tr>
-              <td>{{ loop.index }}</td>
-              <td>{{ row.Instansi }}</td>
-              <td>{{ row.Jumlah }}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-</div>
 
 <!-- ========= Keluhan Prioritas ========= -->
 <div class="card mt-4">
@@ -74,30 +18,54 @@
           </tr>
         </thead>
         <tbody>
-          {% for row in keluhan_prioritas %}
+          {% for _, row in keluhan_prioritas.iterrows() %}
           <tr>
-            <td>{{ row.id }}</td>
             <td>{{ row.keluhan }}</td>
-            <td>{{ row.Topik }}</td>
-            <td>{{ row.Instansi }}</td>
+            <td>{{row.keyword}}}</td>
+            <td>{{ row.topik }}</td>
+            <td>{{ row.instansi }}</td>
             <td>{{ row.emosi }}</td>
             <td>
-              <span class="badge 
-                {% if row.vikor >= 0.9 %}bg-danger
-                {% elif row.vikor >= 0.7 %}bg-warning
+              <span class="badge text-dark
+                {% if row.vikor <= 0.1 %}bg-danger
+                {% elif row.vikor <= 1 %}bg-warning
                 {% else %}bg-secondary
                 {% endif %}">
-                {{ "%.2f"|format(row.vikor) }}
+                {{ "%.4f"|format(row.vikor) }}
               </span>
             </td>
-            <td>
-              <span class="badge 
-                {% if row.status == "belum ditanggapi" %}bg-yellow
-                {% elif row.status == "selesai" %}bg-success
-                {% else %}bg-secondary
-                {% endif %}">
+            <td
+              <span class="badge {% if row.status == 'belum_ditanggapi' %}bg-warning
+                                {% elif row.status == 'selesai' %}bg-success
+                                {% else %}bg-secondary
+                                {% endif %}"
+                    style="cursor: pointer;"
+                    data-bs-toggle="modal"
+                    data-bs-target="#ubahStatusModal{{ row.id }}">
                 {{ row.status }}
               </span>
+
+              <!-- Modal konfirmasi -->
+              <div class="modal fade" id="ubahStatusModal{{ row.id }}" tabindex="-1" aria-labelledby="modalLabel{{ row.id }}" aria-hidden="true">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <form action="{{ url_for('ubah_status') }}" method="POST">
+                      <div class="modal-header">
+                        <h5 class="modal-title" id="modalLabel{{ row.id }}">Ubah Status Keluhan</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                      </div>
+                      <div class="modal-body">
+                        <p>Ubah status keluhan dengan ID <strong>{{ row.id }}</strong> menjadi <strong>Selesai</strong>?</p>
+                        <input type="hidden" name="id" value="{{ row.id }}">
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-success">Ya, ubah</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
             </td>
           </tr>
           {% endfor %}
