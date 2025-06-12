@@ -76,8 +76,9 @@ flask run
 
 ## 📊 Contoh Tampilan Dashboard
 
-![Contoh Dashboard](https://via.placeholder.com/800x400.png?text=Screenshot+Dashboard+KeluhCerdas)
+![Contoh Dashboard](https://raw.githubusercontent.com/jaal047/Project_Capstone_LaskarAI_KeluhCerdas-/refs/heads/main/Backend/static/img/Tampilan_Dashboard-Preview.png)
 
+[**DEMO**](https://alqurtubi17-keluhcerdas.hf.space/) 
 ---
 
 ## 🎯 Tujuan Proyek
