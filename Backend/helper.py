@@ -19,13 +19,22 @@ MAX_LENGTH = 128
 base_path = os.path.join('data')
 model_path = os.path.join('Model')
 
-# --- Helper: Download NLTK data ---
-nltk.download('stopwords')
+# --- Helper: Setup NLTK stopwords ---
+NLTK_DIR = './nltk_data'
+if not os.path.exists(NLTK_DIR):
+    os.makedirs(NLTK_DIR)
+
+nltk.data.path.append(NLTK_DIR)
+
+try:
+    stop_words = set(stopwords.words('indonesian'))
+except LookupError:
+    nltk.download('stopwords', download_dir=NLTK_DIR)
+    stop_words = set(stopwords.words('indonesian'))
 
 # --- Load Resources ---
 alay_dict = pd.read_csv(os.path.join(base_path, 'kamus_alay.csv'), names=['alay', 'normal'], encoding='latin-1')
 alay_dict_map = dict(zip(alay_dict['alay'], alay_dict['normal']))
-stop_words = set(stopwords.words('indonesian'))
 tokenizer = BertTokenizer.from_pretrained("indobenchmark/indobert-large-p1")
 bert_model = TFBertModel.from_pretrained("indobenchmark/indobert-large-p1")
 lstm_model = keras.models.load_model(os.path.join(model_path, 'indobert_lstm_model.keras'))

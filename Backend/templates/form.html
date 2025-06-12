@@ -19,7 +19,7 @@
           <!-- Instansi -->
           <div class="mb-3">
             <label class="form-label">Instansi</label>
-            <select class="form-select" name="instansi" required>
+            <select class="form-select select2" name="instansi" required>
               <option selected disabled>Pilih instansi</option>
               {% for index, row in instansi.iterrows() %}
                 <option value="{{ row['name'] }}">{{ row['name'] }}</option>
@@ -30,7 +30,7 @@
           <!-- Kecamatan -->
           <div class="mb-3">
             <label class="form-label">Kecamatan</label>
-            <select class="form-select" name="kecamatan" id="kecamatan" required>
+            <select class="form-select select2" name="kecamatan" id="kecamatan" required>
               <option selected disabled>Pilih kecamatan</option>
               {% for index, row in kecamatan.iterrows() %}
                 <option value="{{ row['name'] }}">{{ row['name'] }}</option>
@@ -41,7 +41,7 @@
           <!-- Kelurahan -->
           <div class="mb-3">
             <label class="form-label">Kelurahan</label>
-            <select class="form-select" name="kelurahan" id="kelurahan" required>
+            <select class="form-select select2" name="kelurahan" id="kelurahan" required>
               <option selected disabled>Pilih kelurahan</option>
             </select>
           </div>
@@ -49,7 +49,7 @@
           <!-- Topik -->
           <div class="mb-3">
             <label class="form-label">Topik</label>
-            <select class="form-select" name="topik" required>
+            <select class="form-select select2" name="topik" required>
               <option selected disabled>Pilih topik</option>
               {% for index, row in topik.iterrows() %}
                 <option value="{{ row['name'] }}">{{ row['name'] }}</option>
@@ -70,6 +70,15 @@
   </div>
 </div>
 
+<script>
+  $(document).ready(function () {
+    $('.select2').select2({
+      placeholder: "Pilih opsi",
+      allowClear: true,
+      width: '100%'
+    });
+  });
+</script>
 <!-- Kelurahan Map untuk JavaScript -->
 <script>
   const kelurahanMap = {{ kelurahan_map | safe }};
@@ -89,4 +98,5 @@
     }
   });
 </script>
+
 {% endblock %}

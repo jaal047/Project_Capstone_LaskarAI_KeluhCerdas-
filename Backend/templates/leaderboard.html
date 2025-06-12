@@ -1,77 +1,142 @@
 {% extends "base.html" %}
 
-{% block title %}Leaderboard{% endblock %}
+{% block title %}Leaderboard Prioritas{% endblock %}
 
 {% block content %}
 
-
-<!-- ========= Keluhan Prioritas ========= -->
-<div class="card mt-4">
-  <div class="card-header"><h3 class="card-title">Daftar Keluhan Prioritas</h3></div>
+<div class="card shadow-sm mt-4">
+  <div class="card-header bg-light py-3 text-center">
+    <h1 class="card-title mb-0" >Daftar Keluhan Prioritas Belum Terselesaikan</h1>
+  </div>
   <div class="card-body p-0">
     <div class="table-responsive">
-      <table class="table table-hover table-striped mb-0">
-        <thead>
+      <table class="table table-hover table-striped mb-0 custom-table">
+        <thead class="table-dark">
           <tr>
-            <th>ID</th><th>Keluhan</th><th>Topik</th><th>Instansi</th>
-            <th>Emosi</th><th>Skor Prioritas</th><th>Status</th>
+            <th scope="col" style="min-width: 300px;">Isi Keluhan</th>
+            <th scope="col">Topik</th>
+            <th scope="col">Instansi</th>
+            <th scope="col">Emosi</th>
+            <th scope="col">Keyword</th>
+            <th scope="col">Skor Prioritas</th>
+            <th scope="col" class="text-center">Status / Aksi</th>
           </tr>
         </thead>
         <tbody>
           {% for _, row in keluhan_prioritas.iterrows() %}
           <tr>
-            <td>{{ row.keluhan }}</td>
-            <td>{{row.keyword}}}</td>
+            <td>
+              <div class="truncate-text" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#keluhanModal{{ row.id }}">
+                {{ row.keluhan[:100] }}{% if row.keluhan|length > 100 %}...{% endif %}
+              </div>
+            </td>
+            <div class="modal fade" id="keluhanModal{{ row.id }}" tabindex="-1" aria-labelledby="keluhanModalLabel{{ row.id }}" aria-hidden="true">
+              <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="keluhanModalLabel{{ row.id }}">Isi Keluhan Lengkap (ID #{{ row.id }})</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                  </div>
+                  <div class="modal-body">
+                    <p>{{ row.keluhan }}</p>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                  </div>
+                </div>
+              </div>
+            </div>
             <td>{{ row.topik }}</td>
             <td>{{ row.instansi }}</td>
-            <td>{{ row.emosi }}</td>
             <td>
-              <span class="badge text-dark
-                {% if row.vikor <= 0.1 %}bg-danger
-                {% elif row.vikor <= 1 %}bg-warning
-                {% else %}bg-secondary
+              <span class="badge
+                {% if row.emosi == 'anger' %} bg-danger-soft text-danger
+                {% elif row.emosi == 'sadness' %} bg-primary-soft text-primary
+                {% elif row.emosi == 'fear' %} bg-warning-soft text-warning
+                {% else %} bg-secondary-soft text-secondary
+                {% endif %}">
+                <i class="bi 
+                  {% if row.emosi == 'anger' %} bi-emoji-angry-fill
+                  {% elif row.emosi == 'sadness' %} bi-emoji-frown-fill
+                  {% elif row.emosi == 'fear' %} bi-emoji-dizzy-fill
+                  {% else %} bi-question-circle
+                  {% endif %} me-1"></i>
+                {{ row.emosi.capitalize() }}
+              </span>
+            </td>
+            <td>
+              <div class="mt-2">
+                {% for keyword in row.keyword %}
+                  {% if keyword %}
+                    <span class="badge bg-secondary-soft text-secondary me-1">
+                      <i class="bi bi-tag-fill me-1"></i>{{ keyword.strip() }}
+                    </span>
+                  {% endif %}
+                {% endfor %}
+              </div>
+            </td>
+            <td>
+              <span class="badge fs-6
+                {% if row.vikor <= 0.25 %} bg-danger
+                {% elif row.vikor <= 0.75 %} bg-warning text-dark
+                {% else %} bg-success
                 {% endif %}">
                 {{ "%.4f"|format(row.vikor) }}
               </span>
             </td>
-            <td
-              <span class="badge {% if row.status == 'belum_ditanggapi' %}bg-warning
-                                {% elif row.status == 'selesai' %}bg-success
-                                {% else %}bg-secondary
-                                {% endif %}"
+
+            <td class="text-center">
+              <span class="badge 
+                  {% if row.status == 'selesai' %} bg-success
+                  {% else %} bg-warning text-dark
+                  {% endif %}"
+                  
+                  {# Logika if agar status 'Selesai' tidak bisa diklik dan tidak membuka modal #}
+                  {% if row.status != 'selesai' %}
                     style="cursor: pointer;"
                     data-bs-toggle="modal"
-                    data-bs-target="#ubahStatusModal{{ row.id }}">
-                {{ row.status }}
+                    data-bs-target="#ubahStatusModal{{ row.id }}"
+                  {% endif %}>
+                  {{ row.status.replace('_', ' ').title() }}
               </span>
-
-              <!-- Modal konfirmasi -->
-              <div class="modal fade" id="ubahStatusModal{{ row.id }}" tabindex="-1" aria-labelledby="modalLabel{{ row.id }}" aria-hidden="true">
-                <div class="modal-dialog">
-                  <div class="modal-content">
-                    <form action="{{ url_for('ubah_status') }}" method="POST">
-                      <div class="modal-header">
-                        <h5 class="modal-title" id="modalLabel{{ row.id }}">Ubah Status Keluhan</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
-                      </div>
-                      <div class="modal-body">
-                        <p>Ubah status keluhan dengan ID <strong>{{ row.id }}</strong> menjadi <strong>Selesai</strong>?</p>
-                        <input type="hidden" name="id" value="{{ row.id }}">
-                      </div>
-                      <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                        <button type="submit" class="btn btn-success">Ya, ubah</button>
-                      </div>
-                    </form>
-                  </div>
-                </div>
-              </div>
             </td>
           </tr>
+
+          <div class="modal fade" id="ubahStatusModal{{ row.id }}" tabindex="-1" aria-labelledby="modalLabel{{ row.id }}" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <form action="{{ url_for('ubah_status') }}" method="POST">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="modalLabel{{ row.id }}">Konfirmasi Perubahan Status</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                  </div>
+                  <div class="modal-body">
+                    <p>Anda yakin ingin mengubah status keluhan ID <strong>#{{ row.id }}</strong> menjadi <strong>Selesai</strong>?</p>
+                    <p class="text-muted small">Keluhan: "{{ row.keluhan[:100] }}..."</p>
+                    <input type="hidden" name="id" value="{{ row.id }}">
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-success">Ya, Selesaikan</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
           {% endfor %}
         </tbody>
       </table>
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Mengaktifkan semua tooltip di halaman (tetap diperlukan)
+var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+  return new bootstrap.Tooltip(tooltipTriggerEl)
+})
+</script>
 {% endblock %}

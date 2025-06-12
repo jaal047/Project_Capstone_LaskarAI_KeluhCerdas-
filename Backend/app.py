@@ -3,6 +3,8 @@ from datetime import date, datetime
 import os, json
 import numpy as np
 import pandas as pd
+import ast
+import calendar
 from wordcloud import WordCloud
 from helper import predict_emotion,keyword, load_tflite_model
 
@@ -13,37 +15,16 @@ app = Flask(__name__)
 def dashboard():
     base_path = os.path.join('data')
     dash_df = pd.read_excel(os.path.join(base_path, 'dataset_dash.xlsx'))
-    emosi_df = pd.read_excel(os.path.join(base_path, 'final_dataset.xlsx'))
+    emosi_df = pd.read_excel(os.path.join(base_path, 'vikor_fix.xlsx'))
 
     # Info utama
     total_keluhan = dash_df.shape[0]
     topik_terbanyak = dash_df['Topik'].value_counts().idxmax()
     instansi_terbanyak = dash_df['Instansi'].value_counts().idxmax()
 
-    # Proses tanggal
-    dash_df['tanggal_keluhan'] = pd.to_datetime(dash_df['tanggal_keluhan']).dt.normalize()
-    today = pd.to_datetime(datetime.today().date())
-    keluhan_hari_ini = dash_df[dash_df['tanggal_keluhan'] == today].shape[0]
-
-    # Data keluhan harian (last 7 days)
-    start_date = today - pd.Timedelta(days=6)
-    last_7_days_df = dash_df[(dash_df['tanggal_keluhan'] >= start_date) & (dash_df['tanggal_keluhan'] <= today)].copy()
-
-    last_7_days_df['nama_hari'] = last_7_days_df['tanggal_keluhan'].dt.day_name()
-    hari_en_to_id = {
-        'Monday': 'Senin',
-        'Tuesday': 'Selasa',
-        'Wednesday': 'Rabu',
-        'Thursday': 'Kamis',
-        'Friday': 'Jumat',
-        'Saturday': 'Sabtu',
-        'Sunday': 'Minggu'
-    }
-    last_7_days_df['nama_hari'] = last_7_days_df['nama_hari'].map(hari_en_to_id)
-    hari_urut = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu']
-    keluhan_per_hari = last_7_days_df.groupby('nama_hari').size().reindex(hari_urut, fill_value=0)
-    keluhan_harian_labels = keluhan_per_hari.index.tolist()
-    keluhan_harian_values = keluhan_per_hari.values.tolist()
+    # Keluhan belum selesai
+    keluhan_belum_selesai = emosi_df[emosi_df['status'] != 'selesai']
+    keluhan_belum_selesai = keluhan_belum_selesai.shape[0]
 
     # Data emosi
     emosi_dist = emosi_df['emosi'].value_counts()
@@ -51,8 +32,9 @@ def dashboard():
 
     # Data keluhan bulanan dengan sorting berdasarkan tanggal
     # Buat kolom untuk menampung data bulanan dan kelompokkan berdasarkan bulan dan tahun
-    dash_df['year'] = dash_df['tanggal_keluhan'].dt.year
-    dash_df['month'] = dash_df['tanggal_keluhan'].dt.month
+    dash_df['tanggal_keluhan'] = pd.to_datetime(dash_df['tanggal_keluhan']).dt.normalize()
+    dash_df['month'] = dash_df['tanggal_keluhan'].dt.month.astype(int)
+    dash_df['year'] = dash_df['tanggal_keluhan'].dt.year.astype(int)
     
     # Kelompokkan berdasarkan bulan dan tahun
     keluhan_bulanan = dash_df.groupby(['year', 'month']).size().reset_index()
@@ -62,11 +44,11 @@ def dashboard():
     keluhan_bulanan = keluhan_bulanan.sort_values(['year', 'month'])
     
     # Format label bulan-tahun untuk tampilan
-    import calendar
     keluhan_bulanan['bulan_nama'] = keluhan_bulanan.apply(
-        lambda row: f"{calendar.month_abbr[row['month']]} {row['year']}",
+        lambda row: f"{calendar.month_abbr[int(row['month'])]} {int(row['year'])}",
         axis=1
     )
+
     keluhan_bulanan_labels = keluhan_bulanan['bulan_nama'].tolist()
     keluhan_bulanan_values = keluhan_bulanan['count'].tolist()
 
@@ -90,9 +72,7 @@ def dashboard():
         total_keluhan=total_keluhan,
         topik_terbanyak=topik_terbanyak,
         instansi_terbanyak=instansi_terbanyak,
-        keluhan_hari_ini=keluhan_hari_ini,
-        keluhan_harian_labels=keluhan_harian_labels,
-        keluhan_harian_values=keluhan_harian_values,
+        keluhan_belum_selesai=keluhan_belum_selesai,
         emosi_labels=emosi_dist.index.tolist(),
         emosi_values=emosi_values,
         keluhan_bulanan_labels=keluhan_bulanan_labels,
@@ -126,6 +106,7 @@ def leaderboard():
 
      # Filter hanya data yang belum selesai
     df_pending = final_df[final_df['status'] != 'selesai']
+    df_pending['keyword'] = df_pending['keyword'].apply(lambda x: ast.literal_eval(x) if isinstance(x, str) else x)
 
     # ----- Hitung VIKOR -----
     f_emosi_plus  = df_pending['new_emosi'].max()
@@ -179,6 +160,17 @@ def form():
     # Buat mapping: kecamatan_name -> list of kelurahan names
     kelurahan_map = kelurahan_df.groupby('kecamatan_name')['name'].apply(list).to_dict()
 
+    dash_df = pd.read_excel(os.path.join(base_path, 'dataset_dash.xlsx'))
+    if dash_df.empty or 'id' not in dash_df.columns:
+        new_id = 1
+    else:
+        # Ambil ID terakhir dan tambah 1
+        last_id = dash_df['id'].max()
+        if pd.isna(last_id):
+            new_id = 1
+        else:
+            new_id = int(last_id) + 1
+
     message = None
     if request.method == 'POST':
         # Form
@@ -187,13 +179,16 @@ def form():
         tanggal_keluhan = request.form.get('tanggal_keluhan')
         kecamatan = request.form.get('kecamatan')
         kelurahan = request.form.get('kelurahan')
-        topik = request.form.get('topik') 
+        topik = request.form.get('topik')
+        tanggal_hanya = datetime.strptime(tanggal_keluhan, '%Y-%m-%d')
+        waktu_sekarang = datetime.now().time()
+        tanggal_lengkap = datetime.combine(tanggal_hanya, waktu_sekarang) 
+        tanggal_formatted = tanggal_lengkap.strftime('%Y-%m-%d %H:%M:%S.%f')
         
         # Prediksi emosi dan ekstrak keyword
         interpreter = load_tflite_model()
         emosi = predict_emotion(keluhan, interpreter)
         keywords, ranked_keywords = keyword(keluhan)
-        keywords_str = ', '.join(keywords)
         emotion_mapping = {
             'anger': 3,
             'fear': 2,
@@ -203,28 +198,41 @@ def form():
 
         # Buat dictionary data baru
         new_data = {
+            'id': new_id,
             'keluhan': keluhan,
             'instansi': instansi,
-            'tanggal_keluhan': tanggal_keluhan,
+            'tanggal_keluhan': tanggal_formatted,
             'kecamatan': kecamatan,
             'kelurahan': kelurahan,
             'topik': topik,
             'emosi': emosi,
             'new_emosi': new_emosi,
             'new_keyword': ranked_keywords,
-            'keywords': keywords_str,
+            'keyword': keywords,
             'status': 'belum_selesai'
+        }
+        new_data_for_dash = {
+            'id': new_id,
+            'keluhan': keluhan,
+            'tanggal_keluhan': tanggal_formatted,
+            'Topik': topik,      
+            'Instansi': instansi
         }
 
         # Simpan ke final_dataset.xlsx
         # Cek apakah file sudah ada, jika tidak buat baru
         dataset_path = os.path.join('data', 'vikor_fix.xlsx')
+        full_dataset_path = os.path.join('data', 'dataset_dash.xlsx')
         if not os.path.exists(dataset_path):
             df = pd.DataFrame([new_data])
         else:
             df = pd.read_excel(dataset_path)
             df = pd.concat([df, pd.DataFrame([new_data])], ignore_index=True)
+            dt = pd.read_excel(full_dataset_path)
+            dt_n = pd.DataFrame([new_data_for_dash])
+            dt = pd.concat([dt,dt_n], ignore_index=True)
         df.to_excel(dataset_path, index=False)
+        dt.to_excel(full_dataset_path, index=False)
 
         message = "✅ Keluhan berhasil disimpan!"
 
